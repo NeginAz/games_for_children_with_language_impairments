@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 제이쿼리, 제이쿼리ui-->
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+    <!--   <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>-->
+    <!-- touch punch는 jquery ui 아래에 위치해야함 -->
+    <title>JavaScript - Drag and Drop Demo</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<script>
+    var socket = io.connect('http://192.168.100.2:5000');
+    console.log("first socket:", socket);
+    socket.emit('connect event', {data: 'User Connected'});
+    {#$('input.sync').on('click', function(event) {#}
+    {#       socket.emit('my event1', {who: $(this).attr('id') , data : "none" , name: "Introduction"#}
+    {#     });#}
+    {#       return false;#}
+    {#   });#}
+
+     $(document).ready(function() {
+     socket.emit('first_talk', 'I want fruits.');
+     socket.emit('giveme_talk', 'Can you give me an apple?');
+     nonDragged();
+     document.getElementById("btn").disabled = true;
+
+     });
+
+    var score = 0;
+    var count = 0;
+    var first_choice = false;
+    var second_choidce = false;
+    var third_choidce = false;
+    $(function () {
+        $(".item").draggable({
+            revert: "invalid",
+            helper: "clone"
+        });
+
+        $(".cart").droppable({
+            drop: handleDropEvent,
+            hoverClass: 'drag-over'
+
+        });
+    });
+
+    var nonDragged = function(){
+    //make items non draggable
+    $(".item").draggable({
+            disabled: "true"
+        });
+    setTimeout(makeDragged, 5000);
+    }
+    var makeDragged = function(){
+    //make items non draggable
+        $(".item").draggable('enable');
+
+    }
+    function handleDropEvent(event, ui) {
+        var draggable = ui.draggable;
+        var dragged_item = draggable[0].children[0].getAttribute('id'); // dragged item
+        var dragged_item_category = draggable[0].children[0].attributes[1].value; // dragged item category
+        if (first_choice == false && second_choidce == false && third_choidce == false) {
+            if (dragged_item_category == "first_answer") { //based on the type
+                nonDragged(); //make items are not draggable
+
+                score += 1;
+                $('#' + dragged_item).hide();
+                $("#drop_cart").attr("src","../static/cart_with_apple.png");
+                first_choice = true;
+                socket.emit('correct') //robot praise
+                socket.emit('giveme_talk', 'Can you give me an orange?'); //robot ask for the second item
+                socket.emit('object_list', {data: dragged_item}); //emit the information of dragged item
+            }
+            else {
+                nonDragged();
+                score -= 1;
+                socket.emit('wrong') //robot encourage
+                socket.emit('wrong_repeat',  'I want an apple') //robot repeats what it asked
+                socket.emit('object_list', {data: dragged_item}); //emit the information of dragged item
+            }
+        }
+        else if (first_choice == true && second_choidce == false && third_choidce == false) {
+            if (dragged_item_category == "second_answer") { //based on the type
+             nonDragged(); //make items are not draggable
+
+                score += 1;
+                $('#' + dragged_item).hide();
+                $("#drop_cart").attr("src","../static/cart_with_orange.png");
+                second_choidce = true;
+                socket.emit('correct') //robot praise
+                socket.emit('giveme_talk', 'Can you give me two cherries?');
+                socket.emit('object_list', {data: dragged_item}); //emit the information of dragged item
+            }
+            else {
+                nonDragged();
+                score -= 1;
+                socket.emit('wrong') //robot encourage
+                socket.emit('wrong_repeat',  'I want an orange') //robot repeats what it asked
+                socket.emit('object_list', {data: dragged_item}); //emit the information of dragged item
+            }
+        }
+        else {
+            if (dragged_item_category == "third_answer") { //based on the type
+             nonDragged(); //make items are not draggable
+
+                score += 1;
+                $('#' + dragged_item).hide();
+                $("#drop_cart").attr("src","../static/cart_with_cherries.png");
+                third_choidce = true;
+                socket.emit('correct') //robot praise
+                socket.emit('object_list', {data: dragged_item}); //emit the information of dragged item
+                socket.emit('next_page') //robot says go to next page
+                document.getElementById("btn").disabled = false;
+
+            }
+            else {
+                nonDragged();
+                score -= 1;
+                socket.emit('wrong') //robot encourage
+                socket.emit('wrong_repeat',  'I want two cherries') //robot repeats what it asked
+                socket.emit('object_list', {data: dragged_item}); //emit the information of dragged item
+            }
+        }
+    }
+
+    function go_to_next_page() {
+        if (first_choice == true && second_choidce == true && third_choidce==true) {
+            location.href = '/second_page';
+        }
+        else {
+            socket.emit('block_page', "Please select all requested items!") //emit the information of dragged item
+            socket.emit('object_list', {data: "try to go to next step before finishing the current page"}); //emit the information of dragged item
+        }
+    }
+
+         window.onbeforeunload = function () {
+        socket.emit('client_disconnecting', {'data': "Taking Instruction supermarket1"});
+    }
+</script>
+<style>
+body{
+    background-image: url("{{ url_for('static', filename='images/back.jpg') }}");
+
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    width: 100%;
+
+}
+</style>
+<body>
+<div class="container">
+    <form id="data-send" name="data-send">
+
+        <input id ="btn" type="button" value="Next" onclick="go_to_next_page()" style="font-size : 30px; width: 100px; height: 50px;"/>
+    </form>
+    <div class="drop-targets">
+
+        <div class="cart">
+            <img id="drop_cart" data-target-id="grocery" src="../static/shopping-cart.png">
+        </div>
+    </div>
+    <div class="object">
+        <div class="item">
+            <img id="apple" data-source-id="first_answer" src="../static/apple.png">
+        </div>
+        <div class="item">
+            <img id="orange" data-source-id="second_answer" src="../static/orange.png">
+        </div>
+        <div class="item">
+            <img id="cherry" data-source-id="third_answer" src="../static/cherries.png">
+        </div>
+    </div>
+
+</div>
+
+
+</body>
+</html>

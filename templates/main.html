@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <title>Main</title>
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+      <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+      <script type="text/javascript">
+          var socket = io.connect('http://192.168.100.2:5000');
+          //var socket = io.connect('http://127.0.0.1:5000');
+         
+
+      
+
+      socket.on( 'connect', function() {
+        socket.emit( 'connect event', {
+          data: 'User Connected'
+        } )
+
+         $('input.sync').on('click', function(event) {
+                socket.emit('click_main', {who: $(this).attr('id')
+              });
+                return false;
+            });
+            
+            socket.on('green', function(msg) {
+              var x = document.getElementById(msg.who);
+              x.style.color = "green";
+            });
+           
+
+            socket.on('update value1', function(msg) {
+              var vis;
+              var x = document.getElementById("instructions_game");
+              if (x.style.display === "none") {
+                x.style.display = "block";
+                vis = "block";
+                document.getElementById("instructions_game").style.color ="green";
+
+              } else {
+                x.style.display = "none";
+                vis = "none";
+                //document.getElementById("Introduction_Phase").style.color ="black";
+              }
+              // document.getElementById("Warm_Up").style.display = vis;
+              // document.getElementById("Goal_Setting").style.display = vis;
+              // document.getElementById("Goal_Selection").style.display = vis;
+              // document.getElementById("Measurement_Sheet").style.display = vis;
+              // document.getElementById("Praise1").style.display = vis;
+            });
+
+            socket.on('close', function(msg) {
+              var x = document.getElementById(msg.name);
+              if (x.style.display === "block") {
+                x.style.display = "none";
+                x.style.display = "black";
+              }
+        
+          
+            });
+
+
+
+
+
+ socket.on('redirect' , function(data)
+            {
+                console.log(data)
+    //window.location = data.url;
+    window.open(data.url)
+                
+            });
+window.onbeforeunload = function () {
+        socket.emit('client_disconnecting', {'data': "Main"});
+    }
+
+
+      } )
+      
+
+      </script>
+   </head>
+   <style>
+body{
+ background-image: url("{{ url_for('static', filename='images/back.jpg') }}");
+}
+
+input {
+
+    font-size:20px;
+    height:70px;
+    width:200px;
+}​
+
+</style>
+
+
+   <body>
+<!-- <input id="ages_3_5" class="sync" type="button" value="Ages(3-5)" style = "position:absolute; left:80px; top:50px;"  required/> -->
+<input id="0-3" class="sync" type="button" value="0-3 years old" style = "position:absolute; left:80px; top:50px;"  required/>
+<input id="3-5" class="sync" type="button" value="3-5 years old" style = "position:absolute; left:80px; top:250px;"  required/>
+
+<input id="instructions_game" class="sync" type="button" value="Taking instructions" style = "position:absolute; left:340px; top:450px;"  required/>
+<input id="action_game" class="sync" type="button" value="Action game" style = "position:absolute; left:340px; top:50px;"  required/>
+<input id="emotion_game_1" class="sync" type="button" value="Emotion game 1" style = "position:absolute; left:340px; top:150px;"  required/>
+<input id="emotion_game2" class="sync" type="button" value="Emotion game 2" style = "position:absolute; left:340px; top:250px;"  required/>
+<input id="emotion_game3" class="sync" type="button" value="Emotion game 3" style = "position:absolute; left:340px; top:350px;"  required/>
+
+
+
+
+<!-- <input id="Warm_Up" class="sync" type="button" value="Warm Up" style = "position:absolute; left:340px; top:150px; display: none;"  required/>
+
+
+<input id="Goal_Setting" class="sync" type="button" value="Pre_Goal" style = "position:absolute; left:340px; top:250px; display: none;"  required/>
+<input id="Goal_Selection" class="sync" type="button" value="Post_Goal_Praise" style = "position:absolute; left:340px; top:350px; display: none;"  required/>
+
+
+
+
+<input id="Work_On_Goal" class="sync" type="button" value="Work on Goal" style = "position:absolute; left:80px; top:150px;"  required/>
+
+<input id="On_Task" class="sync" type="button" value="If On-task-Praise" style = "position:absolute; left:340px; top:150px; display: none;"  required/>
+<input id="Praise2" class="sync" type="button" value="Praise" style = "position:absolute; left:600px; top:150px; display: none;"  required/>
+
+
+<input id="Off_Task" class="sync" type="button" value="If off-task: Check behavior" style = "position:absolute; left:340px; top:250px; display: none;font-size:16px;"  required/>
+
+
+<input id="redirection" class="sync" type="button" value="Redirection" style = "position:absolute; left:600px; top:250px; display: none; width:250px"  required/>
+<input id="if_on_task" class="sync" type="button" value="If On-task" style = "position:absolute; left:900px; top:250px; display: none;"  required/>
+<input id="if_off_task" class="sync" type="button" value="If Off-task" style = "position:absolute; left:900px; top:350px; display: none;"  required/>
+
+<input id="praise3" class="sync" type="button" value="Praise" style = "position:absolute; left:1200px; top:250px; display: none;"  required/>
+
+
+<input id="check_offtask_behaviors" class="sync" type="button" value="Check Off-task behavior" style = "position:absolute; left:1150px; top:350px; width:250px; display: none;"  required/>
+
+<input id="B1" class="sync" type="button" value="Work Refusal | Shutting down | Anxious | Withdrawn" style = "position:absolute; left:600px; top:250px; display: none; width:390px;font-size:15px;"  required/>
+<input id="B2" class="sync" type="button" value="Low energy | Trouble focusing | Tired or bored" style = "position:absolute; left:600px; top:350px; display: none; width:390px;font-size:15px;"  required/>
+<input id="B3" class="sync" type="button" value="High energy | Trouble focusing | Restless | Fidgety | Silly" style = "position:absolute; left:600px; top:450px; display: none; width:390px; font-size:15px;"  required/>
+<input id="B4" class="sync" type="button" value="Low self-confidence or needing encouragement" style = "position:absolute; left:600px; top:550px; display: none; width:390px; font-size:15px;"  required/>
+<input id="finish_strategy" class="sync" type="button" value="Finish Strategy" style = "position:absolute; left:600px; top:650px; display: none; width:390px; font-size:15px;"  required/>
+
+
+
+
+<input id="Jokes" class="sync" type="button" value="Jokes" style = "position:absolute; left:1000px; top:250px; display: none;"  required/>
+<input id="Games" class="sync" type="button" value="Games" style = "position:absolute; left:1000px; top:350px; display: none;"  required/>
+<input id="Riddles" class="sync" type="button" value="Riddles" style = "position:absolute; left:1000px; top:450px; display: none;"  required/>
+<input id="Breathing" class="sync" type="button" value="Breathing" style = "position:absolute; left:1000px; top:550px; display: none;"  required/>
+
+<input id="riddle_answer" class="sync" type="button" value="Answer" style = "position:absolute; left:1250px; top:450px; display: none;"  required/>
+
+</body>
+</html>

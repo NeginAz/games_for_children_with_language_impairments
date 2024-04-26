@@ -1,0 +1,24 @@
+Name: Ghy
+Age: 42
+Session: 34
+action_game
+Time: Thu Jan 25 20:37:35 2024
+Start Emotion games closed  Thu Jan 25 20:37:52 2024
+emotion_game_1
+Time: Thu Jan 25 20:38:59 2024
+Start Emotion games closed  Thu Jan 25 20:39:03 2024
+emotion_game2
+Time: Thu Jan 25 20:42:54 2024
+Start Emotion games closed  Thu Jan 25 20:43:00 2024
+emotion_game3
+Time: Thu Jan 25 20:47:03 2024
+Start Emotion games closed  Thu Jan 25 20:47:05 2024
+instructions_game
+Time: Thu Jan 25 20:48:02 2024
+apple selected 
+cherry selected 
+orange selected 
+cherry selected 
+Taking Instruction supermarket1 closed  Thu Jan 25 20:51:49 2024
+noodles selected 
+hotdog selected 
