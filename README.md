@@ -7,5 +7,4 @@ The implementation of a robotic interface with games to help children learn basi
 
 
 
-![test.mp4](https://github.com/NeginAz/Games-for-Children-with-language-impairments/assets/55387698/8e271134-36a9-44cb-9d02-8344235a32aa)
 
