@@ -25,6 +25,7 @@ cd qtr-therapy-interface
 2. Install dependencies:
 ```console
 pip install -r requirements.txt
+pip install Flask Flask-SocketIO 
 ```
 3. Set up ROS environment:
 Follow the ROS installation instructions for your operating system. Make sure you have rospy and other necessary ROS packages installed.
