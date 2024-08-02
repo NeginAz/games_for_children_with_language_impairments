@@ -1,7 +1,6 @@
 import numpy as np
 from flask import Flask, render_template, redirect, url_for, session, request
 from flask_socketio import SocketIO, emit, join_room
-#from flask_cors import CORS
 import random
 import time
 import threading
@@ -17,9 +16,13 @@ from emotion_card2 import *
 from emotion_card3 import *
 
 
-path = "/static/images/"
 
-# f = open("instruction_.txt", "w")
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app)
+
+
+path = "/static/images/"
 
 arr_visit = [False, False, False]
 praise_order = [0, 1, 2, 3]
@@ -29,9 +32,100 @@ random.shuffle(encourage_order)
 random_praise = 0
 random_encouragement = 0
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app)
+
+emotion_dictionary = {0: "angry", 1: "happy", 2: "excited", 3: "sad", 4: "scared", 5: "shy"}
+emotions = {0: "happy", 1: "angry", 2: "scared", 3: "excited", 4: "shy", 5: "sad"}
+
+happy = {'ice': 'Having ice cream makes me feel happy!', 'smile': 'When I am happy, I smile!',
+         'energy': 'When I am happy, I feel like I have a lot of energy!', 'jump': 'When I am happy, I want to jump for joy!'}
+sad = {'sad': 'When I am sad, my smile disappears', 'toy': 'My favorite toy is broken, it makes me feel sad!',
+       'friend_sad': 'My friend is sad, it makes me feel sad too!'}
+angry = {'scream': 'When I feel angry, I want to scream and yell!'}
+shy = {'shy': 'When I feel shy, I get red in my face'}
+excited = {'travel': 'Travelling with my family makes me feel excited'}
+scared = {'scared': 'When I feel scared, my legs shake'}
+
+
+@app.route('/')
+def login():
+    return render_template('login.html')
+
+
+@socketio.on('login')
+def logged_in(message):
+    name = message['name']
+    session_no = message["session_no"]
+    age = message["age"]
+    global file_name
+    file_name = f"{name}_{session_no}.txt"
+    with open(file_name, "w") as f:
+        f.write(f"Name: {name}\nAge: {age}\nSession: {session_no}\n")
+    socketio.emit('redirect', {'url': url_for('main_page')})
+
+
+@app.route('/main')
+def main_page():
+    return render_template('main.html')
+
+
+@socketio.on('click_main')
+def main_menu(message):
+    global game, file_name
+    with open(file_name, 'a+') as f:
+        f.write(f"{message['who']}\nTime: {time.ctime()}\n")
+    game_map = {
+        'instructions_game': 'taking_instruction',
+        'emotion_game_1': ('main', 'emotion_games_start', 'emotion_game1'),
+        'action_game': ('main_action', 'emotion_games_start', 'action_game'),
+        'emotion_game2': ('main', 'emotion_games_start', 'emotion_game2'),
+        'emotion_game3': ('main_emotion_game3', 'emotion_games_start', 'emotion_game3')
+    }
+    if message['who'] in game_map:
+        if isinstance(game_map[message['who']], tuple):
+            globals()[game_map[message['who']][0]]()
+            game = game_map[message['who']][2]
+            socketio.emit('redirect', {'url': url_for(game_map[message['who']][1])})
+        else:
+            socketio.emit('redirect', {'url': url_for(game_map[message['who']])})
+
+
+@app.route('/taking_instruction_main')
+def taking_instruction():
+    return render_template('Taking_Instructions_main.html')
+
+@app.route('/first_page')
+def taking_instruction1():
+    rospy.sleep(1.0)
+    return render_template('index_taking_instruction.html')
+
+@app.route('/emotion_games')
+def emotion_games_start():
+    return render_template('start_game.html')
+
+@app.route('/second_page')
+def taking_instruction2():
+    rospy.sleep(1.0)
+    return render_template('index_taking_instruction_page2.html')
+
+@app.route('/third_page')
+def taking_instruction3():
+    rospy.sleep(1.0)
+    return render_template('index_taking_instruction_page3.html')
+
+@socketio.on('connect event')
+def test_connect(message):
+    print(message)
+
+@socketio.on('disconnect')
+def test_connect():
+    print("disconnected")
+
+
+
+
+
+
+
 
 
 @socketio.on('category_talk')
@@ -192,24 +286,6 @@ def test_connect():
     print("disconnected")
 
 
-@app.route('/')
-def login():
-    return render_template('login.html')
-
-
-@socketio.on('login')
-def logged_in(message):
-    name = message['name']
-    session_no = message["session_no"]
-    age = message["age"]
-    global f
-    global file_name
-    file_name = name + "_" + session_no + ".txt"
-    f = open(file_name , "w")
-    f.write("Name: " + name + "\n")
-    f.write("Age: " + age + "\n")
-    f.write("Session: " + session_no + "\n")
-    socketio.emit('redirect', {'url': url_for('main_page')})
 
 
 @socketio.on('click_main')
