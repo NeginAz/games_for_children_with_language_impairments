@@ -1,93 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="UTF-8">
-      <title>Emotion game</title>
-      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
-      <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
-      <script type="text/javascript">
-         $(document).ready(function() {
-         
-           // sending a connect request to the server.
-           //var socket = io.connect('http://192.168.0.14:5000');
-           var socket = io.connect("http://192.168.100.2:5000");
-          socket.on( 'my response', function() {
-        //socket.emit('first event')
-      } );
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion Game</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <style>
+        body {
+            background-image: url("{{ url_for('static', filename='images/back.jpg') }}");
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+            width: 1000px;
+            height: 800px;
+        }
 
+        img {
+            border: none;
+        }
 
- $('input.sync').on('click', function(event) {
-                socket.emit('start game', {who: $(this).attr('id')
-              });
+        input {
+            font-size: 40px;
+            width: 200px;
+            height: 70px;
+        }
+
+        .start-button {
+            font-size: 20px;
+            background: rgba(250, 231, 200, 0.6);
+            position: absolute;
+            left: 435px;
+            top: 30px;
+            color: rgb(0, 0, 0);
+            width: 200px;
+            height: 50px;
+            display: block;
+        }
+
+        .message {
+            position: absolute;
+            font-weight: bold;
+            left: 80px;
+            top: 8px;
+            color: rgb(243, 240, 240);
+            font-size: 30px;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var socket = io.connect('http://192.168.100.2:5000');
+            
+            socket.on('my response', function() {
+                // Handle response from server
+            });
+
+            $('input.sync').on('click', function(event) {
+                socket.emit('start game', {
+                    who: $(this).attr('id')
+                });
                 return false;
             });
 
-
-
-socket.on('redirect' , function(data)
-            {
-                console.log(data)
-    window.location = data.url;
-
+            socket.on('redirect', function(data) {
+                console.log(data);
+                window.location = data.url;
             });
-window.onbeforeunload = function () {
-        socket.emit('client_disconnecting', {'data': "Start Emotion games"});
-    }
 
+            window.onbeforeunload = function() {
+                socket.emit('client_disconnecting', { 'data': "Start Emotion games" });
+            };
+        });
+    </script>
+</head>
+<body>
+    <form method="post" action="/"></form>
 
-         });
+    <p class="message">{{value}}</p>
 
-      </script>
-   </head>
-  
-
-   <body>
-    
- <style>
-body{
- background-image: url("{{ url_for('static', filename='images/back.jpg') }}");
-
-  background-repeat: no-repeat;
- background-size: cover;
- background-attachment: fixed;
-  width: 1000px;
- height: 800px;
-    
-}
-
-
-
-
-img {
-
-border : none;
-}
-
-
-
-
-input {
-  font-size:40px;
-  width :200px;
-  height : 70px;
-  
-}
-</style>
-
-
-
-<form method="post" action="/"></form>
-
-
-<p style = "position:absolute; font-weight:bold;left:80px; top:8px; color:rgb(243, 240, 240); font-size:30px"  > {{value}} </p>
-
-
-
-<input id="start_game" class="sync" type="button" value="Start" style = "font-size:20px; background: rgba(250,231,200 ,0.6); position:absolute; left:435px; top:30px;color:rgb(0,0,0); width:200px; height:50px; display:block"  required />
-
-
-
+    <input id="start_game" class="sync start-button" type="button" value="Start" required />
 </body>
 </html>
-
