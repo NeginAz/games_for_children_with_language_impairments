@@ -1,77 +1,75 @@
 <!DOCTYPE html>
-  <html lang="en">
-  <head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-  </head>
-  <body>
     <style>
-body{
- background-image: url("{{ url_for('static', filename='images/back.jpg') }}");
+        body {
+            background-image: url("{{ url_for('static', filename='images/back.jpg') }}");
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+            width: 100%;
+        }
 
-  background-repeat: no-repeat;
- background-size: cover;
- background-attachment: fixed;
- width: 100%;
+        input {
+            font-size: 25px;
+            height: 60px;
+            width: 20%;
+            position: absolute;
+            left: 40%;
+        }
 
-}
-
-input {
-
-    font-size:25px;
-    height:60px;
-    width:20%;
-}​
-
-
-</style>
-
+        .username { top: 300px; }
+        .age { top: 400px; }
+        .date { top: 500px; }
+        .sync { top: 600px; }
+    </style>
+</head>
+<body>
     <div class="message_holder"></div>
 
     <form action="" method="POST">
-      <input type="text" class="username" placeholder="Name" style = "position:absolute;left:40%; top:300px;"/>
-      <input type="text" class="age" placeholder="Age" style = "position:absolute; left:40%; top:400px;"/>
-      <input type="text" class="date" placeholder="Session" style = "position:absolute; left:40%; top:500px;"/>
-<input id="btn" class="sync" type="button" value="Start" style = "position:absolute; left:40%; top:600px;"  required />
-
+        <input type="text" class="username" placeholder="Name" />
+        <input type="text" class="age" placeholder="Age" />
+        <input type="text" class="date" placeholder="Session" />
+        <input id="btn" class="sync" type="button" value="Start" required />
     </form>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
-    
-
 
     <script type="text/javascript">
-    $(document).ready(function() {
-    var socket = io.connect('http://192.168.100.2:5000');
-    //var socket = io.connect('http://127.0.0.1:5000');
-         
-          socket.on( 'my response', function() {
-          socket.emit('first event')
-      } );
+        $(document).ready(function() {
+            var socket = io.connect('http://192.168.100.2:5000');
 
- 
-  $('input.sync').on('click', function(event) {
-                socket.emit('login', {name : $('input.username').val() , session_no : $('input.date').val() , age: $('input.age').val()}
-            
-            )});
-
-  
- socket.on('redirect' , function(data)
-            {
-                console.log(data)
-    window.location = data.url;
-                
+            // Handle response from the server
+            socket.on('my response', function() {
+                socket.emit('first event');
             });
 
+            // Handle login button click
+            $('input.sync').on('click', function(event) {
+                socket.emit('login', {
+                    name: $('input.username').val(),
+                    session_no: $('input.date').val(),
+                    age: $('input.age').val()
+                });
+            });
 
-     window.onbeforeunload = function () {
-        socket.emit('client_disconnecting', {'data': "login"});
-    }
-   });
+            // Handle redirection from the server
+            socket.on('redirect', function(data) {
+                console.log(data);
+                window.location = data.url;
+            });
 
-
+            // Inform server when the client is disconnecting
+            window.onbeforeunload = function() {
+                socket.emit('client_disconnecting', { 'data': "login" });
+            };
+        });
     </script>
-
-  </body>
-  </html>
+</body>
+</html>
