@@ -1,20 +1,16 @@
 #!/usr/bin/env python
-import sys
-import rospy
-from std_msgs.msg import String
-from time import time, ctime
-from imutils.video import VideoStream
 import argparse
-import imutils
-import time
-import cv2
-import sys
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
 import random
 import requests
 import threading
+import time
 
+import cv2
+import imutils
+import rospy
+from cv_bridge import CvBridge
+from sensor_msgs.msg import Image
+from std_msgs.msg import String
 
 ARUCO_DICT = {
     "DICT_4X4_50": cv2.aruco.DICT_4X4_50,
@@ -40,79 +36,47 @@ ARUCO_DICT = {
     "DICT_APRILTAG_36h11": cv2.aruco.DICT_APRILTAG_36h11
 }
 
-
-#for enabling command line arguments
-ap = argparse.ArgumentParser()
-
-ap.add_argument("-i", "--image", required=False, help="path to input image containing ArUCo tag")
-
-#make sure that --type is the SAME as the type used when the tag was generated
-ap.add_argument("-t", "--type", type=str, default="DICT_ARUCO_ORIGINAL", help="type of ArUCo tag to detect")
-
-args = vars(ap.parse_args())
-
-# load the ArUCo dictionary and grab the ArUCo parameters
-print("[INFO] detecting '{}' tags...".format(args["type"]))
-
-arucoDict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
-# arucoDict = cv2.aruco.getPredefinedDictionary(ARUCO_DICT[args["type"]])
-arucoParams = cv2.aruco.DetectorParameters()
-# detector = cv2.aruco.ArucoDetector(arucoDict, arucoParams)
-
-object_action_dictionary= {
-    0: "eat", 1: "play" , 2: "wash", 3: "walk", 4: "draw",
-    5: "drink", 6: "sleep" , 7: "brush", 8: "bike", 9: "tidy"
-}  
+OBJECT_ACTION_DICTIONARY = {
+    0: "eat", 1: "play", 2: "wash", 3: "walk", 4: "draw",
+    5: "drink", 6: "sleep", 7: "brush", 8: "bike", 9: "tidy"
+}
 
 def send_post_request(action):
-    r = requests.post('http://192.168.100.2:5000/request', data={'action': action})
-
+    requests.post('http://192.168.100.2:5000/request', data={'action': action})
 
 def object_card(id):
     rospy.sleep(1.0)
-    action = str(object_action_dictionary[id])
+    action = str(OBJECT_ACTION_DICTIONARY[id])
     talktext_pub.publish(action)
     send_post_request(action)
-    
-   
+
 def img_callback(img):
-    convertedImage = CvBridge().imgmsg_to_cv2(img, "bgr8")
-    frame = imutils.resize(convertedImage, width=1920)
-    (corners, ids, rejected) = cv2.aruco.detectMarkers(frame, arucoDict,
-    parameters=arucoParams)
+    converted_image = CvBridge().imgmsg_to_cv2(img, "bgr8")
+    frame = imutils.resize(converted_image, width=1920)
+    corners, ids, _ = cv2.aruco.detectMarkers(frame, aruco_dict, parameters=aruco_params)
+    
     if corners:
         global t1
-        cv2.aruco.drawDetectedMarkers(frame, corners)  # Draw A square around the markers
+        cv2.aruco.drawDetectedMarkers(frame, corners)
         print(ids)
         t2 = time.time()
-        if((t2- t1) >  4 and ids[0] < 10):
-            # object_card(ids[0][0])
-            send_post_request(str(object_action_dictionary[ids[0][0]]))
+        if (t2 - t1) > 4 and ids[0] < 10:
+            send_post_request(str(OBJECT_ACTION_DICTIONARY[ids[0][0]]))
             t1 = time.time()
-        # print("rejected" , rejected)
-    #cv2.imshow('frame', frame)
+    
     if cv2.waitKey(1) == ord('q'):
-        return  
-# def signal_handler(signal, frame):
-#   sys.exit(0)
-
-def closing(sth):
-    # print(sth)
-    return
-
+        return
 
 def exit_main_action():
-    # rospy.Subscriber('/usb_cam/image_raw/', Image, closing)
     global sub
     sub.unregister()
     cv2.destroyAllWindows()
     exit()
 
-
 def main_action():
-    # rospy.init_node('my_tutorial_node')
-    threading.Thread(target=lambda:rospy.init_node('node4', disable_signals=True)).start() 
+    threading.Thread(target=lambda: rospy.init_node('node4', disable_signals=True)).start() 
     rospy.loginfo("my_tutorial_node started!")
+    
     global t1 
     t1 = time.time()
     global talktext_pub
@@ -120,34 +84,21 @@ def main_action():
     global emotionShow_pub
     global gesturePlay_pub
     global sub
-    # creating a ros publisher
+    
     speechSay_pub = rospy.Publisher('/qt_robot/speech/say', String, queue_size=10)
     emotionShow_pub = rospy.Publisher('/qt_robot/emotion/show', String, queue_size=10)
-    talktext_pub = rospy.Publisher('/qt_robot/behavior/talkText',String,queue_size=10)
-    gesturePlay_pub = rospy.Publisher('/qt_robot/gesture/play',String,queue_size=10)    
+    talktext_pub = rospy.Publisher('/qt_robot/behavior/talkText', String, queue_size=10)
+    gesturePlay_pub = rospy.Publisher('/qt_robot/gesture/play', String, queue_size=10)
     sub = rospy.Subscriber('/usb_cam/image_raw/', Image, img_callback)
 
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-i", "--image", required=False, help="path to input image containing ArUCo tag")
+    ap.add_argument("-t", "--type", type=str, default="DICT_ARUCO_ORIGINAL", help="type of ArUCo tag to detect")
+    args = vars(ap.parse_args())
 
+    print("[INFO] detecting '{}' tags...".format(args["type"]))
+    aruco_dict = cv2.aruco.getPredefinedDictionary(ARUCO_DICT[args["type"]])
+    aruco_params = cv2.aruco.DetectorParameters()
 
-
-# if __name__ == '__main__':
-#     rospy.init_node('my_tutorial_node')
-#     rospy.loginfo("my_tutorial_node started!")
-#     global t1 
-#     t1 = time.time()
-#    # creating a ros publisher
-#     speechSay_pub = rospy.Publisher('/qt_robot/speech/say', String, queue_size=10)
-#     emotionShow_pub = rospy.Publisher('/qt_robot/emotion/show', String, queue_size=10)
-#     talktext_pub = rospy.Publisher('/qt_robot/behavior/talkText',String,queue_size=10)
-#     rospy.Subscriber('/usb_cam/image_raw/', Image, img_callback)
-    
-   # publish a text message to TTS
-   
-
-    # try:
-    #     rospy.spin()
-        
-    # except KeyboardInterrupt:
-    #     pass
-
-    # rospy.loginfo("finsihed!")
+    main_action()
