@@ -52,7 +52,8 @@ A a robotic interface with games to help children with speech and language impai
 
 
 ## Pictures: 
-![unnamed](https://github.com/user-attachments/assets/5cece7a7-b60d-4671-a2f9-86b1f3ad7189)
+
+<img src ="https://github.com/user-attachments/assets/5cece7a7-b60d-4671-a2f9-86b1f3ad7189" height="250" position ="relative">
 
 
 ## Video Demo:
