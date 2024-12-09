@@ -50,8 +50,9 @@ Monitor and record the child's progress through the built-in logging and feedbac
 
 A a robotic interface with games to help children with speech and language impairments learn basic emotions and actions (in partnership with [KickStart Therapy](https://www.kickstarttherapy.com/)). The API was implementd using flask and python.
 
+
 ## Pictures: 
-![unnamed](https://github.com/NeginAz/Games-for-Children-with-language-impairments/assets/55387698/832544f7-9dae-44a1-a546-ef46dcaadab4)
+![unnamed](https://github.com/user-attachments/assets/5cece7a7-b60d-4671-a2f9-86b1f3ad7189)
 
 
 ## Video Demo:
